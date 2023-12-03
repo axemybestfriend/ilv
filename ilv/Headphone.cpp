@@ -4,6 +4,7 @@
 using namespace std;
 
 Headphone::Headphone() {
+	product::quantity += 1;
 	this->id = 0;
 	this->brand = "NONE";
 	this->name = "NONE";
@@ -12,6 +13,7 @@ Headphone::Headphone() {
 	cout << "Создан товар типа Headphone\n";
 }
 Headphone::Headphone(int id) {
+	product::quantity += 1;
 	this->id = id;
 	this->brand = "NONE";
 	this->name = "NONE";
@@ -20,6 +22,7 @@ Headphone::Headphone(int id) {
 	cout << "Создан товар типа Headphone\n";
 }
 Headphone::Headphone(int id, string brand, string name, string coloring, int price) {
+	product::quantity += 1;
 	this->id = id;
 	this->brand = brand;
 	this->name = name;
@@ -28,6 +31,7 @@ Headphone::Headphone(int id, string brand, string name, string coloring, int pri
 	cout << "Создан товар типа Headphone\n";
 }
 Headphone::~Headphone() {
+	product::quantity -= 1;
 	cout << "Товар типа Headphone удален\n";
 }
 void Headphone::outputheadphone() {

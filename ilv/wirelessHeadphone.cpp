@@ -4,6 +4,7 @@
 using namespace std;
 
 wirelessHeadphone::wirelessHeadphone(){
+	product::quantity += 1;
 	this->id = 0;
 	this->brand = "NONE";
 	this->name = "NONE";
@@ -13,6 +14,7 @@ wirelessHeadphone::wirelessHeadphone(){
 	cout << "Создан товар типа WirelessHeadphone\n";
 }
 wirelessHeadphone::wirelessHeadphone(int id) {
+	product::quantity += 1;
 	this->id = id;
 	this->brand = "NONE";
 	this->name = "NONE";
@@ -22,6 +24,7 @@ wirelessHeadphone::wirelessHeadphone(int id) {
 	cout << "Создан товар типа WirelessHeadphone\n";
 }
 wirelessHeadphone::wirelessHeadphone(int id, string brand, string name, string coloring, int price, int batterycapacity) {
+	product::quantity += 1;
 	this->id = id;
 	this->brand = brand;
 	this->name = name;
@@ -31,6 +34,7 @@ wirelessHeadphone::wirelessHeadphone(int id, string brand, string name, string c
 	cout << "Создан товар типа WirelessHeadphone\n";
 }
 wirelessHeadphone::~wirelessHeadphone() {
+	product::quantity -= 1;
 	cout << "Товар типа WirelessHeadphone удален\n";
 }
 int wirelessHeadphone::batterycapacitydifferenceheadphone(wirelessHeadphone b) {

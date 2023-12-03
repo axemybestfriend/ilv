@@ -5,13 +5,18 @@
 
 class monitor :public screensettings, public product
 {
+	friend void turnon(const monitor&);
+	friend void turnoff(const monitor&);
+private:
+	int countOfSales;
 public:
 	monitor();
-	monitor(int id, string brand, string name, string coloring, int price, int x, int y, int screenDiagonal);
+	monitor(int id, string brand, string name, string coloring, int price, int x, int y, int screenDiagonal,int countOfSales);
 	monitor(int id);
 	~monitor();
 	void outputmonitor();
-	void turnon();
-	void turnof();
+	monitor& operator++();
+	monitor operator++(int);
+	int operator +(int number) const;
+	monitor& operator =(int number);
 };
-

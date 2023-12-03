@@ -4,6 +4,7 @@
 using namespace std;
 
 phone::phone() {
+	product::quantity += 1;
 	this->id = 0;
 	this->brand = "NONE";
 	this->name = "NONE";
@@ -16,6 +17,7 @@ phone::phone() {
 	cout << "Создан товар типа phone\n";
 }
 phone::phone(int id) {
+	product::quantity += 1;
 	this->id = id;
 	this->brand = "NONE";
 	this->name = "NONE";
@@ -28,6 +30,7 @@ phone::phone(int id) {
 	cout << "Создан товар типа phone\n";
 }
 phone::phone(int id, string brand, string name, string coloring, int price, int x, int y, int screenDiagonal, int ROM) {
+	product::quantity += 1;
 	this->id = id;
 	this->brand = brand;
 	this->name = name;
@@ -40,6 +43,7 @@ phone::phone(int id, string brand, string name, string coloring, int price, int 
 	cout << "Создан товар типа phone\n";
 }
 phone:: ~phone() {
+	product::quantity -= 1;
 	cout << "Товар типа phone удален\n";
 }
 void phone::outputphone() {
