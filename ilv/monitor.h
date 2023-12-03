@@ -5,8 +5,8 @@
 
 class monitor :public screensettings, public product
 {
-	friend void turnon(const monitor&);
-	friend void turnoff(const monitor&);
+	friend void turnon(const monitor& a);
+	friend void turnoff(const monitor& a);
 private:
 	int countOfSales;
 public:

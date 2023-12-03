@@ -10,8 +10,8 @@ protected:
 	string name;
 	string coloring;
 	int price;
-	static int quantity;
 public:
+	static int quantity;
 	int pricedifference(int b);
 	int& getprice();
 	int* getid();
@@ -19,5 +19,4 @@ public:
 	void changeprice(int number);
 	void changeid();
 	static int countofproduct();
-	static void setquanity(int number);
 };

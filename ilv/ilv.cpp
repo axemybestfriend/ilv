@@ -3,6 +3,8 @@
 #include <iostream>
 using namespace std;
 
+int product::quantity = 0;
+
 int main()
 {
 	setlocale(LC_ALL, "Russian");
@@ -29,8 +31,6 @@ int main()
 	monitor* a = new monitor(id, brand, name, coloring, price, x, y, screenDiagonal, countOfSales);
 
 	a->outputmonitor();
-
-	product::setquanity(100);// static метод
 
 	turnon(*a); // friend
 	turnoff(*a);

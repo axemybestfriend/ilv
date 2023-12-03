@@ -63,6 +63,7 @@ void turnon(const monitor &a) {
 void turnoff(const monitor& a) {
 	cout << "Монитор " << a.name << " (" << a.id << ") выключен\n";
 }
+
 int monitor::operator +(int number) const
 {
 	return (this->price + number);
