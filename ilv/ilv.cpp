@@ -30,7 +30,7 @@ int main()
 
 	a->outputmonitor();
 
-	product::setquanity(100);
+	product::setquanity(100);// static метод
 
 	turnon(*a); // friend
 	turnoff(*a);
