@@ -3,15 +3,15 @@
 #include <iostream>
 using namespace std;
 
-class product{
+class product {
 protected:
 	int id;
 	string brand;
 	string name;
 	string coloring;
 	int price;
-public:
 	static int quantity;
+public:
 	int pricedifference(int b);
 	int& getprice();
 	int* getid();
@@ -19,4 +19,5 @@ public:
 	void changeprice(int number);
 	void changeid();
 	static int countofproduct();
+	static void setquanity(int number);
 };

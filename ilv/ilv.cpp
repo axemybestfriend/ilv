@@ -3,8 +3,6 @@
 #include <iostream>
 using namespace std;
 
-int product::quantity = 0;
-
 int main()
 {
 	setlocale(LC_ALL, "Russian");
@@ -32,11 +30,14 @@ int main()
 
 	a->outputmonitor();
 
+	product::setquanity(100);
+
 	turnon(*a); // friend
 	turnoff(*a);
 
 	int* p1 = a->getid();
 	int p2 = a->getprice();
+
 	int p3 = product::countofproduct(); // static метод
 
 	cout << *p1 << " " << p2 << " " << p3 << endl;

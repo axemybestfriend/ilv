@@ -29,3 +29,8 @@ int product::countofproduct()
 	return product::quantity;
 }
 
+void product::setquanity(int number)
+{
+	product::quantity = number;
+}
+
