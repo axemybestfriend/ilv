@@ -12,9 +12,23 @@ int& product::getprice() {
 int* product::getid() {
 	return &id;
 }
-void product::changeprice() {
-	cout << "Введите новую цену товара : ";
-	cin >> this->price;
+void product::changeprice()
+{
+	try{
+		cout << "Введите новую цену товара : ";
+		int new_price;
+		cin >> new_price;
+		if (new_price < 0) {
+			throw "Новая цена вне диапозона реальных значений";
+		}
+		if (new_price == this->price) {
+			throw "Новая цена совпадает со старой,изменения не будут произведены";
+		}
+		this->price = new_price;
+	}
+	catch(const char* error_message){
+		cout << error_message << endl;
+	}
 }
 void product::changeprice(int number)
 {

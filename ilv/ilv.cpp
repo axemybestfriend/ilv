@@ -30,23 +30,33 @@ int main()
 
 	monitor* a = new monitor(id, brand, name, coloring, price, x, y, screenDiagonal, countOfSales);
 
-	a->outputmonitor();
+	monitor arr1[3][3];
+	for (int i = 0; i < 3; i++)for (int j = 0; j < 3; j++)arr1[i][j] = *a;
 
-	turnon(*a); // friend
-	turnoff(*a);
+	arr1[0][0].changeprice();
 
-	int* p1 = a->getid();
-	int p2 = a->getprice();
+	for (int i = 0; i < 3; i++)for (int j = 0; j < 2; j++)arr1[i][j].pricedifference(arr1[i][j + 1].getprice());
 
-	int p3 = product::countofproduct(); // static метод
 
-	cout << *p1 << " " << p2 << " " << p3 << endl;
-	monitor b = *a;
 
-	b = b + 1000; //перегрузка операторов
-	++b;
-	b++;
-	b.outputmonitor();
+
+	//a->outputmonitor();
+
+	//turnon(*a); // friendzas
+	//turnoff(*a);
+
+	//int* p1 = a->getid();
+	//int p2 = a->getprice();
+
+	//int p3 = product::countofproduct(); // static метод
+
+	//cout << *p1 << " " << p2 << " " << p3 << endl;
+	//monitor b = *a;
+
+	//b = b + 1000; //перегрузка операторов
+	//++b;
+	//b++;
+	//b.outputmonitor();
 
 
 	//monitor arr1[10];
