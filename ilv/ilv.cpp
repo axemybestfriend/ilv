@@ -1,5 +1,7 @@
 ﻿#include "class.h"
 #include "wirelessHeadphone.cpp"
+#include <vector>
+#include <algorithm>
 
 #include <iostream>
 using namespace std;
@@ -36,7 +38,7 @@ int main()
 	a->pricedifference(b->getprice());
 	
 	wirelessHeadphone<string>* c = new wirelessHeadphone<string>(100);//через конструктор базового класса
-	wirelessHeadphone<int>* d = new wirelessHeadphone<int>(100);
+	wirelessHeadphone<string>* d = new wirelessHeadphone<string>(100);
 	Headphone ilv(100);
 
 	cout << ilv;
@@ -44,5 +46,21 @@ int main()
 	*c = ilv;
 	ilv.outputheadphone();
 	c->output();
+
 	//sqreensettings abstract
+	//lab 7
+	
+	d->changeid();
+	vector <wirelessHeadphone<string>> v;
+	v.push_back(*c);
+	v.push_back(*d);
+	sort(v.begin(), v.end());
+
+	v[0].output();
+
+	auto it = find(v.begin(), v.end(), wirelessHeadphone<string>("123"));
+	if (it != v.end()) {
+		it->output();
+	}
+	else cout << "Объект с таким именем не найден\n";
 }
