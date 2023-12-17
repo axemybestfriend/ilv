@@ -41,3 +41,8 @@ void Headphone::outputheadphone() {
 	cout << this->price << endl;
 	cout << this->coloring << endl;
 }
+std::ostream& operator<<(std::ostream& stream, Headphone& a)
+{
+	a.output();
+	return stream;
+}

@@ -38,6 +38,8 @@ int main()
 	wirelessHeadphone<string>* c = new wirelessHeadphone<string>(100);//через конструктор базового класса
 	wirelessHeadphone<int>* d = new wirelessHeadphone<int>(100);
 	Headphone ilv(100);
+
+	cout << ilv;
 	
 	*c = ilv;
 	ilv.outputheadphone();
