@@ -10,7 +10,6 @@ Headphone::Headphone() {
 	this->name = "NONE";
 	this->coloring = "NONE";
 	this->price = 0;
-	cout << "Создан товар типа Headphone\n";
 }
 Headphone::Headphone(int id) {
 	product::quantity += 1;

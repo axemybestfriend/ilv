@@ -2,8 +2,7 @@
 
 #include <iostream>
 using namespace std;
-
-wirelessHeadphone::wirelessHeadphone(){
+template <typename T> wirelessHeadphone<T>::wirelessHeadphone() {
 	product::quantity += 1;
 	this->id = 0;
 	this->brand = "NONE";
@@ -13,17 +12,12 @@ wirelessHeadphone::wirelessHeadphone(){
 	this->batterycapacity = 0;
 	cout << "Создан товар типа WirelessHeadphone\n";
 }
-wirelessHeadphone::wirelessHeadphone(int id) {
-	product::quantity += 1;
-	this->id = id;
-	this->brand = "NONE";
-	this->name = "NONE";
-	this->coloring = "NONE";
-	this->price = 0;
-	this->batterycapacity = 0;
+template <typename T> wirelessHeadphone<T>::wirelessHeadphone(int a) {
+	this->Headphone::Headphone();
+	this->batterycapacity = a;
 	cout << "Создан товар типа WirelessHeadphone\n";
 }
-wirelessHeadphone::wirelessHeadphone(int id, string brand, string name, string coloring, int price, int batterycapacity) {
+template <typename T> wirelessHeadphone<T>::wirelessHeadphone(int id, string brand, string name, string coloring, int price, int batterycapacity, T model) {
 	product::quantity += 1;
 	this->id = id;
 	this->brand = brand;
@@ -31,19 +25,29 @@ wirelessHeadphone::wirelessHeadphone(int id, string brand, string name, string c
 	this->coloring = coloring;
 	this->price = price;
 	this->batterycapacity = batterycapacity;
+	this->model = model;
 	cout << "Создан товар типа WirelessHeadphone\n";
 }
-wirelessHeadphone::~wirelessHeadphone() {
+template <typename T> wirelessHeadphone<T>::~wirelessHeadphone() {
 	product::quantity -= 1;
 	cout << "Товар типа WirelessHeadphone удален\n";
 }
-int wirelessHeadphone::batterycapacitydifferenceheadphone(wirelessHeadphone b) {
+template <typename T> wirelessHeadphone<T> wirelessHeadphone<T>::operator=(Headphone& C)
+{
+	this->id = *C.getid();
+	this->brand = C.getbrand();
+	this->name = C.getname();
+	this->coloring = C.getcoloring();
+	this->price = C.getprice();
+	return *this;
+}
+template <typename T> int wirelessHeadphone<T>::batterycapacitydifferenceheadphone(wirelessHeadphone<T> b) {
 	if (this->batterycapacity - b.batterycapacity > 0)cout << "Аккамулятор первого больше второго на: " << this->batterycapacity - b.batterycapacity << endl;
 	if (this->batterycapacity - b.batterycapacity < 0)cout << "Аккамулятор второго больше первого на: " << -(this->batterycapacity - b.batterycapacity) << endl;
 	else cout << "По объему аккамуляторы равны";
 	return this->batterycapacity - b.batterycapacity;
 }
-void wirelessHeadphone::outputwirelessheadphone() {
+template <typename T> void wirelessHeadphone<T>::output() {
 	cout << "Характеристики товара\n";
 	cout << this->id << endl;
 	cout << this->brand << endl;
@@ -51,4 +55,5 @@ void wirelessHeadphone::outputwirelessheadphone() {
 	cout << this->coloring << endl;
 	cout << this->price << endl;
 	cout << this->batterycapacity << endl;
+	cout << this->model << endl;
 }

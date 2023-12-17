@@ -14,7 +14,8 @@ public:
 	monitor(int id, string brand, string name, string coloring, int price, int x, int y, int screenDiagonal,int countOfSales);
 	monitor(int id);
 	~monitor();
-	void outputmonitor();
+	int pricedifference(int b);
+	void output();
 	monitor& operator++();
 	monitor operator++(int);
 	int operator +(int number) const;

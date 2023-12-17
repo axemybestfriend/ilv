@@ -1,4 +1,5 @@
 ﻿#include "class.h"
+#include "wirelessHeadphone.cpp"
 
 #include <iostream>
 using namespace std;
@@ -29,50 +30,17 @@ int main()
 	cin >> x >> y;
 
 	monitor* a = new monitor(id, brand, name, coloring, price, x, y, screenDiagonal, countOfSales);
+	monitor* b = new monitor(id, brand, name, coloring, price-100, x, y, screenDiagonal, countOfSales);
 
-	monitor arr1[3][3];
-	for (int i = 0; i < 3; i++)for (int j = 0; j < 3; j++)arr1[i][j] = *a;
-
-	arr1[0][0].changeprice();
-
-	for (int i = 0; i < 3; i++)for (int j = 0; j < 2; j++)arr1[i][j].pricedifference(arr1[i][j + 1].getprice());
-
-
-
-
-	//a->outputmonitor();
-
-	//turnon(*a); // friendzas
-	//turnoff(*a);
-
-	//int* p1 = a->getid();
-	//int p2 = a->getprice();
-
-	//int p3 = product::countofproduct(); // static метод
-
-	//cout << *p1 << " " << p2 << " " << p3 << endl;
-	//monitor b = *a;
-
-	//b = b + 1000; //перегрузка операторов
-	//++b;
-	//b++;
-	//b.outputmonitor();
-
-
-	//monitor arr1[10];
-	//for (int i = 0; i < 10; i++)arr1[i] = *a;
-
-	//arr1[0].changeprice();
-
-	//for (int i = 0; i < 9; i++)arr1[i].pricedifference(arr1[i + 1].getprice());
-
-	//monitor b = *a;
-
-	//delete a;
-
-	//monitor* arr2 = new monitor[10];
-
-	//for (int i = 0; i < 10; i++)arr2[i] = b;
-
-	//delete[]arr2;
+	a->product::pricedifference(b->getprice());
+	a->pricedifference(b->getprice());
+	
+	wirelessHeadphone<string>* c = new wirelessHeadphone<string>(100);
+	wirelessHeadphone<int>* d = new wirelessHeadphone<int>(100);
+	Headphone ilv(100);
+	
+	*c = ilv;
+	ilv.outputheadphone();
+	c->output();
+	//sqreensettings abstract
 }

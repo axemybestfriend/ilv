@@ -1,15 +1,18 @@
 #pragma once
 #include "Headphone.h"
-class wirelessHeadphone : public Headphone
+
+template <typename T> class wirelessHeadphone : public Headphone
 {
 protected:
+	T model;
 	int batterycapacity;
 public:
 	wirelessHeadphone();
-	wirelessHeadphone(int id);
-	wirelessHeadphone(int id, string brand, string name, string coloring, int price, int batterycapacity);
+	wirelessHeadphone(int a);
+	wirelessHeadphone(int id, string brand, string name, string coloring, int price, int batterycapacity, T model);
 	~wirelessHeadphone();
+	wirelessHeadphone operator=(Headphone& C);
 	int batterycapacitydifferenceheadphone(wirelessHeadphone b);
-	void outputwirelessheadphone();
+	void output();
 };
 
