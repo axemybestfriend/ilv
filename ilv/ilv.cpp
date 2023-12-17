@@ -35,7 +35,7 @@ int main()
 	a->product::pricedifference(b->getprice());
 	a->pricedifference(b->getprice());
 	
-	wirelessHeadphone<string>* c = new wirelessHeadphone<string>(100);
+	wirelessHeadphone<string>* c = new wirelessHeadphone<string>(100);//через конструктор базового класса
 	wirelessHeadphone<int>* d = new wirelessHeadphone<int>(100);
 	Headphone ilv(100);
 	

@@ -15,6 +15,7 @@ template <typename T> wirelessHeadphone<T>::wirelessHeadphone() {
 template <typename T> wirelessHeadphone<T>::wirelessHeadphone(int a) {
 	this->Headphone::Headphone();
 	this->batterycapacity = a;
+	this->model = "NONE";
 	cout << "Создан товар типа WirelessHeadphone\n";
 }
 template <typename T> wirelessHeadphone<T>::wirelessHeadphone(int id, string brand, string name, string coloring, int price, int batterycapacity, T model) {
