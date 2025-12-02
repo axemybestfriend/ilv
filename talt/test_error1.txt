@@ -1,0 +1,12 @@
+
+struct Point {
+    int x;
+    int x;  // ќшибка: повторное поле
+};
+
+int main() {
+    int a;
+    int a;  // ќшибка: повторное объ€вление
+    
+    return 0;
+}

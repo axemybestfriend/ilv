@@ -7,6 +7,7 @@ public:
 	Headphone(int id);
 	Headphone(int id, string brand, string name, string coloring, int price);
 	~Headphone();
+	friend ostream& operator<<(std::ostream& stream, Headphone& a);
 	void outputheadphone();
 };
 

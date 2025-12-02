@@ -1,4 +1,7 @@
 ﻿#include "class.h"
+#include "wirelessHeadphone.cpp"
+#include <vector>
+#include <algorithm>
 
 #include <iostream>
 using namespace std;
@@ -29,50 +32,35 @@ int main()
 	cin >> x >> y;
 
 	monitor* a = new monitor(id, brand, name, coloring, price, x, y, screenDiagonal, countOfSales);
+	monitor* b = new monitor(id, brand, name, coloring, price-100, x, y, screenDiagonal, countOfSales);
 
-	monitor arr1[3][3];
-	for (int i = 0; i < 3; i++)for (int j = 0; j < 3; j++)arr1[i][j] = *a;
+	a->product::pricedifference(b->getprice());
+	a->pricedifference(b->getprice());
+	
+	wirelessHeadphone<string>* c = new wirelessHeadphone<string>(100);//через конструктор базового класса
+	wirelessHeadphone<string>* d = new wirelessHeadphone<string>(100);
+	Headphone ilv(100);
 
-	arr1[0][0].changeprice();
+	cout << ilv;
+	
+	*c = ilv;
+	ilv.outputheadphone();
+	c->output();
 
-	for (int i = 0; i < 3; i++)for (int j = 0; j < 2; j++)arr1[i][j].pricedifference(arr1[i][j + 1].getprice());
+	//sqreensettings abstract
+	//lab 7
+	
+	d->changeid();
+	vector <wirelessHeadphone<string>> v;
+	v.push_back(*c);
+	v.push_back(*d);
+	sort(v.begin(), v.end());
 
+	v[0].output();
 
-
-
-	//a->outputmonitor();
-
-	//turnon(*a); // friendzas
-	//turnoff(*a);
-
-	//int* p1 = a->getid();
-	//int p2 = a->getprice();
-
-	//int p3 = product::countofproduct(); // static метод
-
-	//cout << *p1 << " " << p2 << " " << p3 << endl;
-	//monitor b = *a;
-
-	//b = b + 1000; //перегрузка операторов
-	//++b;
-	//b++;
-	//b.outputmonitor();
-
-
-	//monitor arr1[10];
-	//for (int i = 0; i < 10; i++)arr1[i] = *a;
-
-	//arr1[0].changeprice();
-
-	//for (int i = 0; i < 9; i++)arr1[i].pricedifference(arr1[i + 1].getprice());
-
-	//monitor b = *a;
-
-	//delete a;
-
-	//monitor* arr2 = new monitor[10];
-
-	//for (int i = 0; i < 10; i++)arr2[i] = b;
-
-	//delete[]arr2;
+	auto it = find(v.begin(), v.end(), wirelessHeadphone<string>("123"));
+	if (it != v.end()) {
+		it->output();
+	}
+	else cout << "Объект с таким именем не найден\n";
 }

@@ -10,7 +10,6 @@ Headphone::Headphone() {
 	this->name = "NONE";
 	this->coloring = "NONE";
 	this->price = 0;
-	cout << "Создан товар типа Headphone\n";
 }
 Headphone::Headphone(int id) {
 	product::quantity += 1;
@@ -41,4 +40,9 @@ void Headphone::outputheadphone() {
 	cout << this->name << endl;
 	cout << this->price << endl;
 	cout << this->coloring << endl;
+}
+std::ostream& operator<<(std::ostream& stream, Headphone& a)
+{
+	a.output();
+	return stream;
 }

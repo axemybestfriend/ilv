@@ -46,13 +46,15 @@ monitor::~monitor() {
 	product::quantity -= 1;
 	cout << "Товар типа monitor удален\n";
 }
-void monitor::outputmonitor() {
-	cout << "Характеристики товара\n";
-	cout << this->id << endl;
-	cout << this->brand << endl;
-	cout << this->name << endl;
-	cout << this->coloring << endl;
-	cout << this->price << endl;
+int monitor::pricedifference(int b)
+{
+	if (this->price - b > 0)cout << "Первый монитор дороже второго на : " << this->price - b << endl;
+	if (this->price - b < 0)cout << "Второй монитор дороже первого на : " << -(this->price - b) << endl;
+	else cout << "Мониторы стоят одинаково\n";
+	return this->price - b;
+}
+void monitor::output() {
+	this->product::output();
 	cout << this->countOfSales << endl;
 	cout << this->screenDiagonal << endl;
 	cout << this->x << "X" << this->y << endl;
