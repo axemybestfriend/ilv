@@ -176,6 +176,15 @@ public:
 
     // ќчистка
     void clear();
+    Symbol* findVariableInCurrentScope(const std::string& name) const {
+        // »щем только переменные (не типы, не структуры)
+        for (Symbol* sym : currentScope->childScopes) {
+            if (sym->name == name && sym->category == CAT_VARIABLE) {
+                return sym;
+            }
+        }
+        return nullptr;
+    }
 };
 
 #endif

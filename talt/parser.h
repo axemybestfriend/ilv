@@ -116,8 +116,7 @@ public:
     std::string fieldName;
 
     void print(int indent = 0) const override;
-    DataType checkSemantics(SemanticAnalyzer& sem,
-        Symbol*& currentSymbol) override;
+    DataType checkSemantics(SemanticAnalyzer& sem, Symbol*& currentSymbol) override;
     DataType getDataType() const override { return nodeType; }
 
 private:
@@ -165,6 +164,7 @@ private:
     bool match(TokenType expected);
     bool check(TokenType expected) const;
     void error(const std::string& message);
+    void skipToToken(TokenType target);
     Token peekToken();
 
     // Правила грамматики

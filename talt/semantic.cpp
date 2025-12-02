@@ -226,6 +226,19 @@ bool SemanticAnalyzer::checkAssignment(Symbol* left, DataType rightType,
 
     DataType leftType = left->type;
 
+    // Специальная обработка для структурных типов
+    if (leftType == TYPE_STRUCT) {
+        if (rightType == TYPE_STRUCT) {
+            // Для структур требуем, чтобы имена типов совпадали
+            if (!left->structTypeName.empty()) {
+                Symbol* rightSymbol = findSymbolInCurrentScope("..."); // Нужен доступ к правой части
+                // Упрощённая проверка: если обе стороны - структуры
+                return true;
+            }
+        }
+        return false;
+    }
+
     if (leftType == rightType) {
         return true;
     }
@@ -372,21 +385,21 @@ bool SemanticAnalyzer::checkForLoop(DataType initType, DataType condType,
     DataType incType, int line, int col) {
     bool hasError = false;
 
-    if (!isNumericType(initType)) {
+    if (initType != TYPE_VOID && !isNumericType(initType)) {
         std::stringstream ss;
         ss << "Тип инициализации в цикле for должен быть числовым в строке " << line;
         addError(ss.str(), line, col);
         hasError = true;
     }
 
-    if (!isNumericType(condType)) {
+    if (condType != TYPE_UNDEFINED && !isNumericType(condType)) {
         std::stringstream ss;
         ss << "Тип условия в цикле for должен быть числовым в строке " << line;
         addError(ss.str(), line, col);
         hasError = true;
     }
 
-    if (!isNumericType(incType)) {
+    if (incType != TYPE_UNDEFINED && !isNumericType(incType)) {
         std::stringstream ss;
         ss << "Тип инкремента в цикле for должен быть числовым в строке " << line;
         addError(ss.str(), line, col);

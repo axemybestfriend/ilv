@@ -42,42 +42,47 @@ void Parser::error(const std::string& message) {
 DataType Parser::parseType(std::string* structTypeName) {
     DataType type = TYPE_UNDEFINED;
 
-    if (check(TK_INT)) {
+    if (match(TK_INT)) {
         type = TYPE_INT;
-        match(TK_INT);
     }
-    else if (check(TK_SHORT)) {
+    else if (match(TK_SHORT)) {
         type = TYPE_SHORT;
-        match(TK_SHORT);
     }
-    else if (check(TK_LONG)) {
+    else if (match(TK_LONG)) {
         type = TYPE_LONG;
-        match(TK_LONG);
     }
-    else if (check(TK_FLOAT)) {
+    else if (match(TK_FLOAT)) {
         type = TYPE_FLOAT;
-        match(TK_FLOAT);
     }
-    else if (check(TK_STRUCT)) {
+    else if (match(TK_VOID)) {
+        type = TYPE_VOID;
+    }
+    else if (match(TK_STRUCT)) {
         type = TYPE_STRUCT;
-        match(TK_STRUCT);
         if (check(TK_IDENT)) {
             if (structTypeName) {
                 *structTypeName = currentToken.lexeme;
             }
             advance();
         }
-    }
-    else if (check(TK_VOID)) {
-        type = TYPE_VOID;
-        match(TK_VOID);
+        else {
+            // Неправильное объявление структуры
+            return TYPE_UNDEFINED;
+        }
     }
     else if (check(TK_IDENT)) {
-        type = TYPE_STRUCT;
-        if (structTypeName) {
-            *structTypeName = currentToken.lexeme;
+        // Проверяем, не является ли это именем структуры
+        if (semantic.findStructType(currentToken.lexeme)) {
+            type = TYPE_STRUCT;
+            if (structTypeName) {
+                *structTypeName = currentToken.lexeme;
+            }
+            advance();
         }
-        advance();
+        else {
+            // Не тип, возвращаемся
+            return TYPE_UNDEFINED;
+        }
     }
 
     return type;
@@ -91,7 +96,6 @@ std::unique_ptr<ProgramNode> Parser::parse() {
 
     return program;
 }
-
 std::unique_ptr<ProgramNode> Parser::parseProgram() {
     auto program = std::make_unique<ProgramNode>();
     program->line = currentToken.line;
@@ -105,11 +109,7 @@ std::unique_ptr<ProgramNode> Parser::parseProgram() {
             program->declarations.push_back(std::move(decl));
         }
         else {
-            // Пропускаем токены до следующего объявления
-            while (!check(TK_EOF) &&
-                !check(TK_INT) && !check(TK_SHORT) &&
-                !check(TK_LONG) && !check(TK_FLOAT) &&
-                !check(TK_STRUCT) && !check(TK_VOID)) {
+            if (!check(TK_EOF)) {
                 advance();
             }
         }
@@ -120,52 +120,38 @@ std::unique_ptr<ProgramNode> Parser::parseProgram() {
 }
 
 std::unique_ptr<ASTNode> Parser::parseDeclaration() {
-    if (check(TK_STRUCT)) {
-        return parseStructDeclaration();
-    }
-
-    // Сохраняем начальную позицию
-    Token startToken = currentToken;
+    // Сохраняем позицию для возможного отката
+    std::streampos savedPos = scanner.getPosition();
+    Token savedToken = currentToken;
 
     // Пробуем распарсить тип
     std::string structTypeName;
     DataType type = parseType(&structTypeName);
 
     if (type == TYPE_UNDEFINED) {
-        // Возвращаемся к началу
-        currentToken = startToken;
-        // Это может быть выражение
+        // Не тип - возвращаемся и парсим как оператор
+        scanner.setPosition(savedPos);
+        currentToken = savedToken;
         return parseStatement();
     }
 
+    // Теперь должен быть идентификатор
     if (!check(TK_IDENT)) {
-        error("Ожидался идентификатор после типа");
-        return nullptr;
+        // Не идентификатор - возвращаемся и парсим как оператор
+        scanner.setPosition(savedPos);
+        currentToken = savedToken;
+        return parseStatement();
     }
 
-    std::string identName = currentToken.lexeme;
-
-    // Смотрим следующий токен
-    Token nextToken = peekToken();
-
-    if (nextToken.type == TK_LPAREN) {
-        // Это функция - нужно вернуться к началу
-        currentToken = startToken;
-        return parseFunctionDeclaration(type);
-    }
-    else {
-        // Это переменная
-        return parseVariableDeclaration(type, structTypeName);
-    }
+    // Успешно распарсили тип и идентификатор - это объявление переменной
+    return parseVariableDeclaration(type, structTypeName);
 }
-
-
 std::unique_ptr<StructDeclNode> Parser::parseStructDeclaration() {
     auto structDecl = std::make_unique<StructDeclNode>();
     structDecl->line = currentToken.line;
     structDecl->column = currentToken.column;
 
-    match(TK_STRUCT);
+    match(TK_STRUCT); // Пропускаем 'struct'
 
     if (!check(TK_IDENT)) {
         error("Ожидалось имя структуры");
@@ -173,22 +159,30 @@ std::unique_ptr<StructDeclNode> Parser::parseStructDeclaration() {
     }
 
     structDecl->name = currentToken.lexeme;
-    advance();
+    advance(); // Пропускаем имя структуры
 
     if (!match(TK_LBRACE)) {
         error("Ожидалась '{' после имени структуры");
         return nullptr;
     }
 
+    // Входим в новую область видимости для структуры
+    semantic.enterScope();
+
     while (!check(TK_RBRACE) && !check(TK_EOF)) {
-        DataType fieldType = parseType();
+        // Парсим тип поля
+        std::string fieldStructType;
+        DataType fieldType = parseType(&fieldStructType);
+
         if (fieldType == TYPE_UNDEFINED) {
             error("Ожидался тип поля структуры");
+            semantic.leaveScope();
             return nullptr;
         }
 
         if (!check(TK_IDENT)) {
             error("Ожидалось имя поля структуры");
+            semantic.leaveScope();
             return nullptr;
         }
 
@@ -197,16 +191,26 @@ std::unique_ptr<StructDeclNode> Parser::parseStructDeclaration() {
 
         if (!match(TK_SEMICOLON)) {
             error("Ожидалась ';' после объявления поля");
+            semantic.leaveScope();
             return nullptr;
         }
 
+        // Добавляем поле в структуру
         structDecl->fields.push_back({ fieldName, fieldType });
+
+        // Добавляем поле в семантический анализатор
+        semantic.addFieldToStruct(structDecl->name, fieldName, fieldType, fieldStructType,
+            currentToken.line, currentToken.column);
     }
 
     if (!match(TK_RBRACE)) {
         error("Ожидалась '}' после объявления полей структуры");
+        semantic.leaveScope();
         return nullptr;
     }
+
+    // Выходим из области видимости структуры
+    semantic.leaveScope();
 
     if (!match(TK_SEMICOLON)) {
         error("Ожидалась ';' после определения структуры");
@@ -215,7 +219,6 @@ std::unique_ptr<StructDeclNode> Parser::parseStructDeclaration() {
 
     return structDecl;
 }
-
 std::unique_ptr<FunctionNode> Parser::parseFunctionDeclaration(DataType returnType) {
     auto funcDecl = std::make_unique<FunctionNode>();
     funcDecl->line = currentToken.line;
@@ -294,39 +297,23 @@ std::unique_ptr<VarDeclNode> Parser::parseVariableDeclaration(DataType type, con
 }
 
 std::unique_ptr<ASTNode> Parser::parseStatement() {
-    // ПЕРВОЕ: проверяем, не объявление ли это переменной
-    // Сохраняем текущую позицию
+    // Пробуем распарсить как объявление переменной
     std::streampos savedPos = scanner.getPosition();
     Token savedToken = currentToken;
 
-    // Пробуем распарсить тип
-    DataType type = parseType();
-    if (type != TYPE_UNDEFINED) {
-        // Успешно распарсили тип - проверяем, что дальше
-        if (check(TK_IDENT)) {
-            std::string identName = currentToken.lexeme;
-            Token nextToken = peekToken();
+    std::string structTypeName;
+    DataType type = parseType(&structTypeName);
 
-            if (nextToken.type == TK_LPAREN) {
-                // Это объявление функции - не может быть внутри другого блока
-                // Возвращаемся назад и парсим как выражение
-                scanner.setPosition(savedPos);
-                currentToken = savedToken;
-                // Будем парсить как обычное выражение ниже
-            }
-            else {
-                // Это объявление переменной!
-                return parseVariableDeclaration(type, "");
-            }
-        }
-    }
-    else {
-        // Не тип - восстанавливаем позицию
-        scanner.setPosition(savedPos);
-        currentToken = savedToken;
+    if (type != TYPE_UNDEFINED && check(TK_IDENT)) {
+        // Это объявление переменной
+        return parseVariableDeclaration(type, structTypeName);
     }
 
-    // ВТОРОЕ: если не объявление переменной, то это оператор
+    // Не объявление - возвращаемся
+    scanner.setPosition(savedPos);
+    currentToken = savedToken;
+
+    // Пробуем другие типы операторов
     if (check(TK_FOR)) {
         return parseForLoop();
     }
@@ -339,7 +326,7 @@ std::unique_ptr<ASTNode> Parser::parseStatement() {
         return parseBlock();
     }
 
-    // ТРЕТЬЕ: это может быть присваивание или выражение
+    // Это может быть выражение или присваивание
     auto expr = parseExpression();
     if (!expr) {
         return nullptr;
@@ -358,48 +345,52 @@ std::unique_ptr<ForLoopNode> Parser::parseForLoop() {
     forLoop->line = currentToken.line;
     forLoop->column = currentToken.column;
 
-    match(TK_FOR);
+    match(TK_FOR); // Пропускаем 'for'
 
     if (!match(TK_LPAREN)) {
         error("Ожидалась '(' после for");
         return nullptr;
     }
 
-    // Инициализация (может быть объявлением переменной или выражением)
-    // Сохраняем позицию для отката
-    std::streampos savedPos = scanner.getPosition();
-    Token savedToken = currentToken;
+    // Входим в новую область видимости для цикла
+    semantic.enterScope();
 
-    DataType type = parseType();
-    if (type != TYPE_UNDEFINED && check(TK_IDENT)) {
-        // Это объявление переменной в for
-        auto varDecl = parseVariableDeclaration(type, "");
-        if (varDecl) {
-            forLoop->init = std::move(varDecl);
-        }
-        else {
-            return nullptr;
-        }
+    // Инициализация
+    if (check(TK_SEMICOLON)) {
+        match(TK_SEMICOLON);
     }
     else {
-        // Это выражение или пустая инициализация
-        scanner.setPosition(savedPos);
-        currentToken = savedToken;
+        // Пробуем распарсить как объявление переменной
+        std::streampos savedPos = scanner.getPosition();
+        Token savedToken = currentToken;
 
-        if (check(TK_SEMICOLON)) {
-            match(TK_SEMICOLON);
+        std::string structTypeName;
+        DataType type = parseType(&structTypeName);
+
+        if (type != TYPE_UNDEFINED && check(TK_IDENT)) {
+            // Это объявление переменной
+            auto varDecl = parseVariableDeclaration(type, structTypeName);
+            if (varDecl) {
+                forLoop->init = std::move(varDecl);
+            }
+            else {
+                semantic.leaveScope();
+                return nullptr;
+            }
         }
         else {
+            // Это выражение
+            scanner.setPosition(savedPos);
+            currentToken = savedToken;
             forLoop->init = parseExpression();
             if (!match(TK_SEMICOLON)) {
                 error("Ожидалась ';' после инициализации for");
+                semantic.leaveScope();
                 return nullptr;
             }
         }
     }
 
-    // Остальная часть функции остается без изменений...
-    // Условие (может быть пустым)
     if (check(TK_SEMICOLON)) {
         match(TK_SEMICOLON);
     }
@@ -407,11 +398,11 @@ std::unique_ptr<ForLoopNode> Parser::parseForLoop() {
         forLoop->condition = parseExpression();
         if (!match(TK_SEMICOLON)) {
             error("Ожидалась ';' после условия for");
+            semantic.leaveScope();
             return nullptr;
         }
     }
 
-    // Инкремент (может быть пустым)
     if (check(TK_RPAREN)) {
         match(TK_RPAREN);
     }
@@ -419,6 +410,7 @@ std::unique_ptr<ForLoopNode> Parser::parseForLoop() {
         forLoop->increment = parseExpression();
         if (!match(TK_RPAREN)) {
             error("Ожидалась ')' после инкремента for");
+            semantic.leaveScope();
             return nullptr;
         }
     }
@@ -427,12 +419,13 @@ std::unique_ptr<ForLoopNode> Parser::parseForLoop() {
     forLoop->body = parseStatement();
     if (!forLoop->body) {
         error("Ожидалось тело цикла for");
+        semantic.leaveScope();
         return nullptr;
     }
 
+    semantic.leaveScope();
     return forLoop;
 }
-
 std::unique_ptr<ReturnNode> Parser::parseReturnStatement() {
     auto returnNode = std::make_unique<ReturnNode>();
     returnNode->line = currentToken.line;
@@ -496,15 +489,16 @@ std::unique_ptr<BlockNode> Parser::parseBlock() {
 }
 
 std::unique_ptr<ASTNode> Parser::parseExpression() {
+    // Парсим логическое ИЛИ
     auto left = parseLogicalOr();
 
-    if (check(TK_ASSIGN)) {
-        // Это присваивание
+    // Проверяем, является ли это присваиванием
+    if (match(TK_ASSIGN)) {
         auto assign = std::make_unique<AssignNode>();
         assign->line = currentToken.line;
         assign->column = currentToken.column;
 
-        // Проверяем, является ли левая часть переменной или доступом к полю
+        // Проверяем, является ли левая часть переменной
         if (auto varNode = dynamic_cast<VarNode*>(left.get())) {
             assign->varName = varNode->name;
             assign->fieldName = varNode->fieldName;
@@ -514,7 +508,6 @@ std::unique_ptr<ASTNode> Parser::parseExpression() {
             return nullptr;
         }
 
-        match(TK_ASSIGN);
         assign->expression = parseExpression();
         if (!assign->expression) {
             error("Ожидалось выражение в правой части присваивания");
@@ -715,8 +708,6 @@ std::unique_ptr<ASTNode> Parser::parsePostfix() {
     auto node = parsePrimary();
 
     while (check(TK_DOT)) {
-        // std::cout << "DEBUG: Found DOT token" << std::endl;
-
         match(TK_DOT); // Пропускаем '.'
 
         if (!check(TK_IDENT)) {
@@ -726,21 +717,17 @@ std::unique_ptr<ASTNode> Parser::parsePostfix() {
 
         // Проверяем, является ли node переменной
         if (auto varNode = dynamic_cast<VarNode*>(node.get())) {
-            // std::cout << "DEBUG: It's a VarNode: " << varNode->name << std::endl;
-
-            // Создаем новый VarNode для доступа к полю
+            // Создаем новый VarNode с информацией о поле
             auto fieldAccess = std::make_unique<VarNode>();
             fieldAccess->line = currentToken.line;
             fieldAccess->column = currentToken.column;
             fieldAccess->name = varNode->name;
             fieldAccess->fieldName = currentToken.lexeme;
-            // std::cout << "DEBUG: Creating field access: " << varNode->name << "." << currentToken.lexeme << std::endl;
-            advance();
+
+            advance(); // Пропускаем имя поля
             node = std::move(fieldAccess);
         }
         else {
-            // Пытаемся обработать как выражение с полем
-            // Например: (expression).field
             error("Доступ к полям возможен только для переменных");
             return nullptr;
         }
@@ -1065,14 +1052,29 @@ void VarNode::print(int indent) const {
     std::cout << "\n";
 }
 
+void ConstNode::print(int indent) const {
+    std::string spaces(indent, ' ');
+    std::cout << spaces << "Const " << SemanticAnalyzer::dataTypeToString(type)
+        << " " << value << "\n";
+}
+
 DataType VarNode::checkSemantics(SemanticAnalyzer& sem, Symbol*& currentSymbol) {
+    // Ищем переменную
     Symbol* symbol = sem.findSymbol(name);
+
     if (!symbol) {
+        // Проверяем, не является ли это именем структуры
+        if (sem.findStructType(name)) {
+            sem.addError("'" + name + "' является именем структуры, а не переменной", line, column);
+            return TYPE_UNDEFINED;
+        }
+
         sem.addError("Идентификатор '" + name + "' не объявлен", line, column);
         return TYPE_UNDEFINED;
     }
 
     if (!fieldName.empty()) {
+        // Это доступ к полю структуры
         DataType fieldType = TYPE_UNDEFINED;
         if (!sem.checkFieldAccess(symbol, fieldName, &fieldType, line, column)) {
             return TYPE_UNDEFINED;
@@ -1080,15 +1082,21 @@ DataType VarNode::checkSemantics(SemanticAnalyzer& sem, Symbol*& currentSymbol) 
         nodeType = fieldType;
     }
     else {
-        nodeType = symbol->type;
+        // Это обычная переменная
+        if (symbol->category == CAT_VARIABLE) {
+            nodeType = symbol->type;
+        }
+        else if (symbol->category == CAT_TYPE || symbol->category == CAT_STRUCT_TYPE) {
+            sem.addError("'" + name + "' является типом, а не переменной", line, column);
+            return TYPE_UNDEFINED;
+        }
+        else {
+            sem.addError("'" + name + "' не является переменной", line, column);
+            return TYPE_UNDEFINED;
+        }
     }
 
     return nodeType;
-}
-void ConstNode::print(int indent) const {
-    std::string spaces(indent, ' ');
-    std::cout << spaces << "Const " << SemanticAnalyzer::dataTypeToString(type)
-        << " " << value << "\n";
 }
 
 DataType ConstNode::checkSemantics(SemanticAnalyzer& sem, Symbol*& currentSymbol) {
@@ -1137,4 +1145,13 @@ void Parser::printAST(const ASTNode* node) {
         return;
     }
     node->print();
+}
+
+void Parser::skipToToken(TokenType target) {
+    while (!check(target) && !check(TK_EOF)) {
+        advance();
+    }
+    if (check(target)) {
+        advance();
+    }
 }
